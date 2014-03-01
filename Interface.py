@@ -4,7 +4,7 @@ import wx.grid as gridlib
 class Interface(wx.Frame):
 
     def __init__(self,parent,id):
-        wx.Frame.__init__(self,parent,id,'Machine Turing',size=(740,400))
+        wx.Frame.__init__(self,parent,id,'Machine Turing',size=(740,400), style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(hbox)
         
