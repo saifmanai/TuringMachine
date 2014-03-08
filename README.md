@@ -1,4 +1,4 @@
 TuringMachine
 =============
 
-Machine turing a plusieurs bandes et piles
+Turing machine with multiple tapes and stacks
