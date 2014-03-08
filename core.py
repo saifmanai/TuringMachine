@@ -28,29 +28,32 @@ class TuringMachine:
         self.actions = {}
         self.nr_actions = 0
     
-    def add_tape(self, tape):
-        if not type(tape) is list:
+    def add_tape(self, tape): 
+        if not type(tape) is list:  
             raise TuringSetupException("tape is not of type 'list'")
-        for symbol in tape:
+        #Check if all symbols are from the table of valid symbols
+        for symbol in tape: 
             if not symbol in self.alphabet:
                 raise TuringSetupException("Invalid symbol %s" % symbol)
-        
+            
+        #Inserting a blank symbol to prevent reading error at start
         if len(tape) == 0: tape.append(self.symbol_blank)
         self.tapes.append(dict(tape=tape, position=0)) 
-
+ 
     def add_stack(self, stack):
         if not type(stack) is list: raise TuringSetupException("stack is not of type 'list'")  
         self.stacks.append(stack)
+
     
     def add_action(self, state, read_values, pop_values, write_values, push_values, directions, next_state): 
-        read_values = tuple(read_values)
-        pop_values = tuple(pop_values)
-        
+        read_values = tuple(read_values) #Convert to tuple because you can't use a list as an index
+        pop_values = tuple(pop_values) #Convert to tuple because you can't use a list as an index
+
         for direction in directions: 
             if direction != self.dir_left and direction != self.dir_right and direction != self.dir_stay:  raise TuringSetupException("Invalid direction '%s'" % direction) 
   
-        self.actions[(state, read_values, pop_values)] = dict(id=self.nr_actions, write_values=write_values, push_values=push_values, directions=directions, next_state=next_state)
-        self.nr_actions += 1
+        self.actions[(state, read_values, pop_values)] = dict(id=self.nr_actions, write_values=write_values, push_values=push_values, directions=directions, next_state=next_state) #Add action to list
+        self.nr_actions += 1 #Used to give each action an id
     
     def _read(self, tape_nr):
         tape_entry = self.tapes[tape_nr]
@@ -85,26 +88,26 @@ class TuringMachine:
             tape_entry['position'] += 1
             if tape_entry['position'] >= len(tape_entry['tape']): 
                 tape_entry['tape'].append(self.symbol_blank)
-        elif direction != self.dir_stay:
-            raise TuringRuntimeException("Invalid direction '%(dir)s' for state '%(state)s' and values (%(read)s), (%(pop)s)" % dict(dir=direction, state=self.state, read=read_values, pop=pop_values))
-  
+         
     def run_step(self):
         if self.state == self.state_halt:
             return
-        
+
+        #Read current value from each tape
         read_values = [] 
         for tape_nr, tape_entry in enumerate(self.tapes): 
             read_values.append(self._read(tape_nr)) 
         read_values = tuple(read_values)
 
+        #Pop a value from each stack
         pop_values = [] 
         for stack_nr, stack in enumerate(self.stacks): 
             pop_values.append(self._pop(stack_nr)) 
         pop_values = tuple(pop_values) 
-          
+
+        #Get the correspondant action for the combination of state , read values and stack values
         index = (self.state, read_values, pop_values) 
         if not index in self.actions: raise TuringRuntimeException("No action defined for state '%(state)s' and values (%(read)s), (%(pop)s)" % dict(state=self.state, read=read_values, pop=pop_values)) 
-          
         action = self.actions[index]
 
         self.current_action = action['id']
@@ -128,14 +131,16 @@ class TuringMachine:
         if len(self.actions) == 0: raise TuringRuntimeException("No actions defined!") 
           
         self.state = self.state_initial
-        self.current_action = -1
+        self.current_action = -1 #Minus one means the machine is not running
       
     def run(self): 
         while self.state != self.state_halt:
             self.run_step()
   
   
-if __name__ == "__main__": 
+if __name__ == "__main__":
+
+    #Usage example with addition code
     blank=' '
     nowrite = '-'
     tape1 = [1,0,1,1,1,0]
