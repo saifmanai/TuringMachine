@@ -2,7 +2,7 @@ import wx
 import wx.grid as gridlib
 
 ROWS_BORDER = 4 #Border for buttons panel
-BUTTONS_SPACING = 6 #Space between buttons . Check the "Adding buttons..." section
+BUTTONS_SPACING = 6 #Space between buttons. Check the "Adding buttons..." section
 
 class Interface(wx.Frame):
     def __init__(self,parent,id):
