@@ -1,70 +1,134 @@
 import wx
 import wx.grid as gridlib
 
+ROWS_BORDER = 4 #Border for buttons panel
+BUTTONS_SPACING = 6 #Space between buttons . Check the "Adding buttons..." section
+
 class Interface(wx.Frame):
     def __init__(self,parent,id):
-        wx.Frame.__init__(self,parent,id,'Machine Turing',size=(740,400), style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        self.SetSizer(hbox)
-        
-        self.pnl1 = wx.Panel(self, -1, style=wx.NO_BORDER,size=(300,0))
-        hbox.Add(self.pnl1,0, wx.EXPAND | wx.RIGHT, 4)
-        
-        self.vbox = wx.BoxSizer(wx.VERTICAL)
-        self.pnl1.SetSizer(self.vbox)
-
-        pnl_btn = wx.Panel(self.pnl1, -1, style=wx.NO_BORDER)
-        self.vbox.Add(pnl_btn,0,wx.EXPAND | wx.ALL, 10)
-        
-        tape = wx.TextCtrl(self.pnl1)
-        self.vbox.Add(tape,0,wx.EXPAND | wx.ALL, 10)
-        
-        btn_box = wx.BoxSizer(wx.HORIZONTAL)
-        pnl_btn.SetSizer(btn_box)
-
-        add_btn=wx.Button(pnl_btn,label="+")
-        self.Bind(wx.EVT_BUTTON, self.add_tape, add_btn)
-        btn_box.Add(add_btn,0,wx.EXPAND | wx.RIGHT, 10)
-        
-        remove_btn=wx.Button(pnl_btn,label="-")
-        self.Bind(wx.EVT_BUTTON, self.remove_tape, remove_btn)
-        btn_box.Add(remove_btn,0,wx.EXPAND | wx.RIGHT, 10)
-
-        start_btn=wx.Button(pnl_btn,label="Start")
-        btn_box.Add(start_btn,0,wx.EXPAND | wx.RIGHT, 10)
-        
-        myGrid=gridlib.Grid(self)
-        myGrid.CreateGrid(30,5)
-        myGrid.SetRowLabelSize(0)
-        hbox.Add(myGrid,1, wx.EXPAND, 1)
-        myGrid.SetColLabelValue(0,"State")
-        myGrid.SetColLabelValue(1,"Read Values")
-        myGrid.SetColLabelValue(2,"Write Values")
-        myGrid.SetColLabelValue(3,"Direction")
-        myGrid.SetColLabelValue(4,"Next State")
-        
+        wx.Frame.__init__(self,parent, id, 'Turing Machine', size=(987,600), style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX) #style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX  added to disable the window maximize function
         self.Centre()
 
-        self.added_tapes = []
+        #Create global sizer for frame
+        main_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.SetSizer(main_sizer)
+
+        #Create panel on the frame . Will act as the left panel later
+        self.left_panel = wx.Panel(self, style=wx.NO_BORDER)
+        main_sizer.Add(self.left_panel, 0, wx.EXPAND|wx.RIGHT, 4) #Add left panel to the global sizer
+
+        #Create sizer for the left panel 
+        self.left_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.left_panel.SetSizer(self.left_sizer) #Set the sizer of the left panel to the left sizer
+
+        #Create panel for buttons 
+        main_btn_panel = wx.Panel(self.left_panel, style=wx.NO_BORDER)
+        self.left_sizer.Add(main_btn_panel, 0, wx.EXPAND|wx.ALL, ROWS_BORDER) #Add buttons panel to the left sizer to arrange it vertically
+
+        #Create sizer for buttons 
+        main_btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        main_btn_panel.SetSizer(main_btn_sizer) #Set the sizer of the buttons panel to the newly created sizer in order to arrange the buttons horizontally
+
+        #Adding buttons to the top buttons panel
+        #===================================
+        self.run_btn = wx.Button(main_btn_panel, label="Run")
+        main_btn_sizer.Add(self.run_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
+
+        self.step_btn = wx.Button(main_btn_panel, label="Step")
+        main_btn_sizer.Add(self.step_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
+
+        self.clear_btn = wx.Button(main_btn_panel, label="Clear")
+        main_btn_sizer.Add(self.clear_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
+        #===================================
+
+        #Create panel for stacks
+        self.stacks_panel = wx.Panel(self.left_panel, style=wx.NO_BORDER)
+        self.left_sizer.Add(self.stacks_panel, 0, wx.EXPAND) #Add the stacks panel to the vertically arranged left sizer
+
+        #Create sizer for stacks , arranged vertically
+        self.stacks_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.stacks_panel.SetSizer(self.stacks_sizer) #Set the stacks panel sizer to the stacks sizer
+
+        #Create panel for tapes
+        self.tapes_panel = wx.Panel(self.left_panel, style=wx.NO_BORDER)
+        self.left_sizer.Add(self.tapes_panel, 1, wx.EXPAND) #Add it to the left sizer to arrange the panel vertically
+
+        #Create sizer for tapes
+        self.tapes_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.tapes_panel.SetSizer(self.tapes_sizer) #Arrange them vertically
+
+        #Create tape buttons panel
+        tape_btn_panel = wx.Panel(self.left_panel, style=wx.NO_BORDER)
+        self.left_sizer.Add(tape_btn_panel, 0, wx.EXPAND|wx.ALL, ROWS_BORDER) #Arrange the tape buttons panel vertically by adding it to the left sizer
+
+        #Create sizer for tape buttons
+        tape_btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        tape_btn_panel.SetSizer(tape_btn_sizer) #Arrange buttons horizontally
+
+        #Adding buttons to the bottom buttons panel
+        #===================================
+        self.add_tape_btn = wx.Button(tape_btn_panel, label="Add Tape")
+        tape_btn_sizer.Add(self.add_tape_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
         
-    def closewindow(self,event):
-        self.Destroy()
+        self.remove_tape_btn = wx.Button(tape_btn_panel, label="Remove Tape")
+        tape_btn_sizer.Add(self.remove_tape_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
+        
+        self.add_stack_btn = wx.Button(tape_btn_panel, label="Add Stack")
+        tape_btn_sizer.Add(self.add_stack_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
+        
+        self.remove_stack_btn = wx.Button(tape_btn_panel, label="Remove Stack")
+        tape_btn_sizer.Add(self.remove_stack_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
+        #===================================
 
-    def add_tape(self, event):
-        tape = wx.TextCtrl(self.pnl1)
-        self.added_tapes.append(tape)
-        self.vbox.Add(tape,0,wx.EXPAND | wx.ALL, 10)
-        self.vbox.Layout()
+        #Create panel for the right side . Will contain the GRID and bottom buttons panel
+        right_panel = wx.Panel(self, style=wx.NO_BORDER, size=(400,0))
+        main_sizer.Add(right_panel, 1, wx.EXPAND|wx.RIGHT, 4) # Add the panel to the global sizer
 
-    def remove_tape(self, event):
-        if len(self.added_tapes) > 0:
-            last_tape = self.added_tapes.pop()
-            self.vbox.Remove(last_tape)
-            last_tape.Destroy()
-            self.vbox.Layout()
+        #Create vertical sizer for the right side panel
+        right_sizer = wx.BoxSizer(wx.VERTICAL)
+        right_panel.SetSizer(right_sizer)
+        
+        #Create GRID
+        #===================================
+        self.program_table=gridlib.Grid(right_panel)
+        self.program_table.CreateGrid(40,7)
+        self.program_table.SetRowLabelSize(0) #Set to zero to remove the first column containing the name of each row
+        self.program_table.SetColLabelValue(0, "State")
+        self.program_table.SetColLabelValue(1, "Read Values")
+        self.program_table.SetColLabelValue(2, "Read Stacks")
+        self.program_table.SetColLabelValue(3, "Write Values")
+        self.program_table.SetColLabelValue(4, "Write Stacks")
+        self.program_table.SetColLabelValue(5, "Move")
+        self.program_table.SetColLabelValue(6, "Next State")
+        #===================================
+
+        right_sizer.Add(self.program_table, 1, wx.EXPAND|wx.BOTTOM, 4) #Add the grid to the right side sizer
+
+        #Create bottom buttons panel for the right side 
+        program_btn_panel = wx.Panel(right_panel, style=wx.NO_BORDER)
+        right_sizer.Add(program_btn_panel, 0, wx.EXPAND|wx.ALL, ROWS_BORDER) #Add it to the right sizer to display it vertically after the grid
+
+        #Create bottom buttons sizer
+        program_btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        program_btn_panel.SetSizer(program_btn_sizer) #Arrange them horizontally
+
+        #Adding buttons + label + input
+        #===================================
+        self.load_btn = wx.Button(program_btn_panel, label="Load Program")
+        program_btn_sizer.Add(self.load_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
+
+        self.save_btn = wx.Button(program_btn_panel, label="Save Program")
+        program_btn_sizer.Add(self.save_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
+
+        initial_state_label = wx.StaticText(program_btn_panel, label="Initial State: ") 
+        program_btn_sizer.Add(initial_state_label, 0, wx.ALIGN_CENTER_VERTICAL)
+
+        self.initial_state_ctrl = wx.TextCtrl(program_btn_panel) #Input for initial state
+        program_btn_sizer.Add(self.initial_state_ctrl, 0, wx.EXPAND)
+        #===================================
 
 if __name__=='__main__':
-    app=wx.PySimpleApp()
-    frame=Interface(parent=None,id=-1)
+    app=wx.App() #Switched the deprecated PySimpleApp() with a newer one
+    frame=Interface(parent=None, id=wx.ID_ANY) #wx.ID_ANY = -1
     frame.Show()
     app.MainLoop()
