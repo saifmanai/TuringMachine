@@ -3,6 +3,7 @@ import interface
 import wx
 import wx.grid as gridlib
 
+#Configuration
 HALT_STATE = 'halt'
 REAL_BLANK_SYMBOL = ' '
 VISUAL_BLANK_SYMBOL = '_'
@@ -13,6 +14,8 @@ class Main(interface.Interface):
     def __init__(self, *args, **kargs):
         interface.Interface.__init__(self, *args, **kargs)
 
+        #Binding buttons to functions to be executed
+        #===================================
         self.Bind(wx.EVT_BUTTON, self.add_tape, self.add_tape_btn)
         self.Bind(wx.EVT_BUTTON, self.remove_tape, self.remove_tape_btn)
         
@@ -25,13 +28,14 @@ class Main(interface.Interface):
         self.Bind(wx.EVT_BUTTON, self.run, self.run_btn)
         self.Bind(wx.EVT_BUTTON, self.step, self.step_btn)
         self.Bind(wx.EVT_BUTTON, self.clear_values, self.clear_btn)
+        #===================================
         
         self.tapes = []
         self.stacks = []
 
         self.machine = None
         self.add_tape(None)
-        self.last_action = -1
+        self.last_action = -1 #-1 means the machine is not running
 
         
     def add_tape(self, event):
@@ -64,8 +68,8 @@ class Main(interface.Interface):
 
     
     def clear(self):
-        while len(self.tapes) > 1:
-            self.remove_tape(None)
+        while len(self.tapes) > 1: #A turing machine should have at least one tape
+            self.remove_tape(None) #We provide the event as None because we run the function manually
         self.tapes[0].Clear()
         
         while len(self.stacks) > 0:
@@ -75,7 +79,7 @@ class Main(interface.Interface):
     
     def load_program(self, event):
         openFileDialog = wx.FileDialog(self, "Open Turing Machine program", wildcard="Turing Machine program (*.tm)|*.tm", style=wx.FD_OPEN|wx.FD_FILE_MUST_EXIST)
-        if openFileDialog.ShowModal() == wx.ID_OK:
+        if openFileDialog.ShowModal() == wx.ID_OK: #ShowModal opens the dialog box . wx.ID_OK = OK button being pressed
             file_path = openFileDialog.GetPath()
             openFileDialog.Destroy()
             
@@ -124,7 +128,7 @@ class Main(interface.Interface):
                     
             f.close()
 
-    
+    #Updates tape values and positions with those from the machine
     def update_values(self):
         for tape_nr, tape_entry in enumerate(self.machine.tapes):
             tape_ctrl = self.tapes[tape_nr]
@@ -133,12 +137,14 @@ class Main(interface.Interface):
             current_pos = tape_entry['position']
             tape_ctrl.SetStyle(current_pos, current_pos+1, CURRENT_POS_STYLE)
 
+    #Used to disable editing while running by step
     def enable_editing(self, bool_enable):
         for tape in self.tapes:
             tape.SetEditable(bool_enable)
         self.program_table.EnableEditing(bool_enable)
         self.clear_btn.Enable(bool_enable)
 
+    #Highlight the last action 
     def update_current_action(self):
         if self.last_action != -1:
             attr = gridlib.GridCellAttr()
@@ -152,7 +158,8 @@ class Main(interface.Interface):
         
         self.program_table.Refresh()
         self.last_action = self.machine.current_action
-    
+
+    #Creates a turing machine and prepares it for running
     def prepare_machine(self):
         initial_state = self.initial_state_ctrl.GetValue()
         self.machine = core.TuringMachine(state_initial=initial_state, state_halt=HALT_STATE, alphabet=(REAL_BLANK_SYMBOL,'0','1'))
@@ -161,7 +168,8 @@ class Main(interface.Interface):
             self.machine.add_tape(list(tape.GetValue()))
         for stack in self.stacks:
             self.machine.add_stack(list(stack.GetLabel()))
-        
+
+        #Add the actions from the table to the machine
         row = 0
         list_finished = False
         while not list_finished:
