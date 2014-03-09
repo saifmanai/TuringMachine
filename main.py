@@ -21,13 +21,14 @@ class Main(interface.Interface):
         
         self.Bind(wx.EVT_BUTTON, self.add_stack, self.add_stack_btn)
         self.Bind(wx.EVT_BUTTON, self.remove_stack, self.remove_stack_btn)
-        
-        self.Bind(wx.EVT_BUTTON, self.load_program, self.load_btn)
-        self.Bind(wx.EVT_BUTTON, self.save_program, self.save_btn)
 
         self.Bind(wx.EVT_BUTTON, self.run, self.run_btn)
         self.Bind(wx.EVT_BUTTON, self.step, self.step_btn)
-        self.Bind(wx.EVT_BUTTON, self.clear_values, self.clear_btn)
+        self.Bind(wx.EVT_BUTTON, self.clear_values, self.clear_values_btn)
+
+        self.Bind(wx.EVT_BUTTON, self.load_program, self.load_btn)
+        self.Bind(wx.EVT_BUTTON, self.save_program, self.save_btn)
+        self.Bind(wx.EVT_BUTTON, self.clear_program, self.clear_program_btn)
         #===================================
         
         self.tape_panels = []
@@ -82,7 +83,7 @@ class Main(interface.Interface):
             self.stacks_sizer.Remove(last_stack)
             last_stack.Destroy()
             self.left_sizer.Layout()
-
+        self.clear_program(None)
     
     def clear_tape_list(self):
         while len(self.tape_panels) > 1: #A turing machine should have at least one tape
@@ -90,7 +91,7 @@ class Main(interface.Interface):
         while len(self.stack_panels) > 1:
             self.remove_stack(None)
         self.clear_values(None)
-        self.program_table.ClearGrid()
+        
     
     def load_program(self, event):
         openFileDialog = wx.FileDialog(self, "Open Turing Machine program", wildcard="Turing Machine program (*.tm)|*.tm", style=wx.FD_OPEN|wx.FD_FILE_MUST_EXIST)
@@ -143,12 +144,27 @@ class Main(interface.Interface):
                     
             f.close()
 
+    def clear_program(self, event):
+        self.program_table.ClearGrid()
+        self.initial_state_ctrl.SetValue("")
+
+    
     #Used to disable editing while running by step
     def enable_editing(self, bool_enable):
         for tape_panel in self.tape_panels:
             tape_panel.tape.SetEditable(bool_enable)
+            
+        self.add_tape_btn.Enable(bool_enable)
+        self.remove_tape_btn.Enable(bool_enable)
+        self.add_stack_btn.Enable(bool_enable)
+        self.remove_stack_btn.Enable(bool_enable)
+        self.clear_values_btn.Enable(bool_enable)
+        self.load_btn.Enable(bool_enable)
+        self.save_btn.Enable(bool_enable)
+        self.clear_program_btn.Enable(bool_enable)
+
         self.program_table.EnableEditing(bool_enable)
-        self.clear_btn.Enable(bool_enable)
+        
 
     #Updates tape values and positions, and stack values with those from the machine
     def update_values(self):
@@ -227,6 +243,7 @@ class Main(interface.Interface):
             self.machine.run()
         except core.TuringException as e:
             wx.MessageBox(str(e), 'Error', wx.OK|wx.ICON_ERROR)
+            self.machine.running = False
 
         self.end_running()
     
@@ -246,6 +263,7 @@ class Main(interface.Interface):
                 self.machine.run_next_action()
         except core.TuringException as e:
             wx.MessageBox(str(e), 'Error', wx.OK|wx.ICON_ERROR)
+            self.machine.running = False
             self.end_running()
 
     def clear_values(self, event):

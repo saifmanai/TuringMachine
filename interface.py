@@ -6,7 +6,7 @@ BUTTONS_SPACING = 6 #Space between buttons. Check the "Adding buttons..." sectio
 
 class Interface(wx.Frame):
     def __init__(self,parent,id):
-        wx.Frame.__init__(self,parent, id, 'Turing Machine', size=(987,600), style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX) #style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX  added to disable the window maximize function
+        wx.Frame.__init__(self,parent, id, 'Turing Machine', size=(984,600), style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX) #style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX  added to disable the window maximize function
         self.Centre()
 
         #Create global sizer for frame
@@ -37,8 +37,8 @@ class Interface(wx.Frame):
         self.step_btn = wx.Button(main_btn_panel, label="Step")
         main_btn_sizer.Add(self.step_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
 
-        self.clear_btn = wx.Button(main_btn_panel, label="Clear Values")
-        main_btn_sizer.Add(self.clear_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
+        self.clear_values_btn = wx.Button(main_btn_panel, label="Clear Values")
+        main_btn_sizer.Add(self.clear_values_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
         #===================================
 
         #Create panel for stacks
@@ -82,7 +82,7 @@ class Interface(wx.Frame):
 
         #Create panel for the right side . Will contain the GRID and bottom buttons panel
         right_panel = wx.Panel(self, style=wx.NO_BORDER, size=(400,0))
-        main_sizer.Add(right_panel, 1, wx.EXPAND|wx.RIGHT, 4) # Add the panel to the global sizer
+        main_sizer.Add(right_panel, 1, wx.EXPAND) # Add the panel to the global sizer
 
         #Create vertical sizer for the right side panel
         right_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -119,9 +119,12 @@ class Interface(wx.Frame):
 
         self.save_btn = wx.Button(program_btn_panel, label="Save Program")
         program_btn_sizer.Add(self.save_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
+		
+        self.clear_program_btn = wx.Button(program_btn_panel, label="Clear Program")
+        program_btn_sizer.Add(self.clear_program_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
 
-        initial_state_label = wx.StaticText(program_btn_panel, label="Initial State: ") 
-        program_btn_sizer.Add(initial_state_label, 0, wx.ALIGN_CENTER_VERTICAL)
+        initial_state_label = wx.StaticText(program_btn_panel, label="Initial State: ",style=wx.ST_NO_AUTORESIZE|wx.ALIGN_RIGHT) 
+        program_btn_sizer.Add(initial_state_label, 1, wx.ALIGN_CENTER_VERTICAL)
 
         self.initial_state_ctrl = wx.TextCtrl(program_btn_panel) #Input for initial state
         program_btn_sizer.Add(self.initial_state_ctrl, 0, wx.EXPAND)
