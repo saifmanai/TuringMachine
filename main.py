@@ -145,8 +145,8 @@ class Main(interface.Interface):
 
     #Used to disable editing while running by step
     def enable_editing(self, bool_enable):
-        for tape in self.tape_panels:
-            tape.SetEditable(bool_enable)
+        for tape_panel in self.tape_panels:
+            tape_panel.tape.SetEditable(bool_enable)
         self.program_table.EnableEditing(bool_enable)
         self.clear_btn.Enable(bool_enable)
 
