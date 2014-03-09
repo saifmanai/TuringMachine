@@ -175,6 +175,9 @@ class Main(interface.Interface):
             attr = gridlib.GridCellAttr()
             attr.SetBackgroundColour(wx.GREEN)
             self.program_table.SetRowAttr(self.machine.current_action_id, attr)
+            self.program_table.MakeCellVisible(self.machine.current_action_id, 0)
+        else:
+            self.program_table.MakeCellVisible(0, 0)
         
         self.program_table.Refresh()
         self.last_action = self.machine.current_action_id
