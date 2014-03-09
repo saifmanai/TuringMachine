@@ -127,7 +127,14 @@ class Main(interface.Interface):
                     
             f.close()
 
-    #Updates tape values and positions with those from the machine
+    #Used to disable editing while running by step
+    def enable_editing(self, bool_enable):
+        for tape in self.tapes:
+            tape.SetEditable(bool_enable)
+        self.program_table.EnableEditing(bool_enable)
+        self.clear_btn.Enable(bool_enable)
+
+    #Updates tape values and positions, and stack values with those from the machine
     def update_values(self):
         for tape_nr, tape_entry in enumerate(self.machine.tapes):
             tape_ctrl = self.tapes[tape_nr]
@@ -135,13 +142,9 @@ class Main(interface.Interface):
             tape_ctrl.SetValue(''.join(tape_entry['tape']))
             current_pos = tape_entry['position']
             tape_ctrl.SetStyle(current_pos, current_pos+1, CURRENT_POS_STYLE)
-
-    #Used to disable editing while running by step
-    def enable_editing(self, bool_enable):
-        for tape in self.tapes:
-            tape.SetEditable(bool_enable)
-        self.program_table.EnableEditing(bool_enable)
-        self.clear_btn.Enable(bool_enable)
+            
+        for stack_nr, stack in enumerate(self.machine.stacks):
+            self.stacks[stack_nr].SetLabel(''.join(stack))
 
     #Highlight the last action 
     def update_current_action(self):
@@ -220,7 +223,6 @@ class Main(interface.Interface):
     def clear_values(self, event):
         for tape in self.tapes:
             tape.Clear()
-
         for stack in self.stacks:
             stack.SetLabel("")
 
