@@ -127,7 +127,8 @@ class TuringMachine:
             self.current_action = -1
         
     def init(self):
-        if len(self.tapes) == 0: raise TuringRuntimeException("No tapes defined!") 
+        if len(self.tapes) == 0: raise TuringRuntimeException("No tapes defined!")
+        if len(self.stacks) == 0: raise TuringRuntimeException("No stacks defined!") 
         if len(self.actions) == 0: raise TuringRuntimeException("No actions defined!") 
           
         self.state = self.state_initial

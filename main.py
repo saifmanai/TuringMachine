@@ -35,6 +35,7 @@ class Main(interface.Interface):
 
         self.machine = None
         self.add_tape(None)
+        self.add_stack(None)
         self.last_action = -1 #-1 means the machine is not running
 
         
@@ -59,7 +60,7 @@ class Main(interface.Interface):
         self.left_sizer.Layout()
 
     def remove_stack(self, event):
-        if len(self.stacks) > 0:
+        if len(self.stacks) > 1:
             last_stack = self.stacks.pop()
             self.stacks_sizer.Remove(last_stack)
             last_stack.Destroy()
@@ -70,11 +71,9 @@ class Main(interface.Interface):
     def clear(self):
         while len(self.tapes) > 1: #A turing machine should have at least one tape
             self.remove_tape(None) #We provide the event as None because we run the function manually
-        self.tapes[0].Clear()
-        
-        while len(self.stacks) > 0:
+        while len(self.stacks) > 1:
             self.remove_stack(None)
-            
+        self.clear_values(None)
         self.program_table.ClearGrid()
     
     def load_program(self, event):
@@ -90,7 +89,7 @@ class Main(interface.Interface):
             config = config_line.split()
             for nr_tape in range(int(config[0])-1):
                 self.add_tape(None)
-            for nr_stack in range(int(config[1])):
+            for nr_stack in range(int(config[1])-1):
                 self.add_stack(None)
             self.initial_state_ctrl.SetValue(config[2])
 
