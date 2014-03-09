@@ -27,6 +27,7 @@ class TuringMachine:
         self.stacks = []
         self.actions = {}
         self.nr_actions = 0
+        self.running = False
     
     def add_tape(self, tape): 
         if not type(tape) is list:  
@@ -88,9 +89,9 @@ class TuringMachine:
             tape_entry['position'] += 1
             if tape_entry['position'] >= len(tape_entry['tape']): 
                 tape_entry['tape'].append(self.symbol_blank)
-         
-    def run_step(self):
-        if self.state == self.state_halt:
+
+    def get_next_action(self):
+        if not self.running:
             return
 
         #Read current value from each tape
@@ -108,23 +109,26 @@ class TuringMachine:
         #Get the correspondant action for the combination of state , read values and stack values
         index = (self.state, read_values, pop_values) 
         if not index in self.actions: raise TuringRuntimeException("No action defined for state '%(state)s' and values (%(read)s), (%(pop)s)" % dict(state=self.state, read=read_values, pop=pop_values)) 
-        action = self.actions[index]
+        self.current_action = self.actions[index]
+        self.current_action_id = self.current_action['id']
 
-        self.current_action = action['id']
+    def run_next_action(self):
+        if not self.running:
+            return
         
         for tape_nr, tape_entry in enumerate(self.tapes):
-            self._write(tape_nr, action['write_values'][tape_nr])
+            self._write(tape_nr, self.current_action['write_values'][tape_nr])
 
         for stack_nr, stack in enumerate(self.stacks):
-            self._push(stack_nr, action['push_values'][stack_nr])
+            self._push(stack_nr, self.current_action['push_values'][stack_nr])
         
         for tape_nr, tape_entry in enumerate(self.tapes):
-            self._move(tape_nr, action['directions'][tape_nr]) 
+            self._move(tape_nr, self.current_action['directions'][tape_nr]) 
           
-        self.state = action['next_state'] 
+        self.state = self.current_action['next_state'] 
 
         if self.state == self.state_halt:
-            self.current_action = -1
+            self.running = False  
         
     def init(self):
         if len(self.tapes) == 0: raise TuringRuntimeException("No tapes defined!")
@@ -132,11 +136,12 @@ class TuringMachine:
         if len(self.actions) == 0: raise TuringRuntimeException("No actions defined!") 
           
         self.state = self.state_initial
-        self.current_action = -1 #Minus one means the machine is not running
-      
-    def run(self): 
+        self.running = True
+        
+    def run(self):
         while self.state != self.state_halt:
-            self.run_step()
+            self.get_next_action()
+            self.run_next_action()
   
   
 if __name__ == "__main__":

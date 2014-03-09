@@ -150,13 +150,13 @@ class Main(interface.Interface):
             attr.SetBackgroundColour(wx.WHITE)
             self.program_table.SetRowAttr(self.last_action, attr)
 
-        if self.machine.current_action != -1:
+        if self.machine.current_action_id != -1:
             attr = gridlib.GridCellAttr()
             attr.SetBackgroundColour(wx.GREEN)
-            self.program_table.SetRowAttr(self.machine.current_action, attr)
+            self.program_table.SetRowAttr(self.machine.current_action_id, attr)
         
         self.program_table.Refresh()
-        self.last_action = self.machine.current_action
+        self.last_action = self.machine.current_action_id
 
     #Creates a turing machine and prepares it for running
     def prepare_machine(self):
