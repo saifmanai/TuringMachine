@@ -194,31 +194,33 @@ class Main(interface.Interface):
         self.update_values()
         
     def run(self, event):
-        self.prepare_machine()
-        self.machine.run()
-
-        self.update_values()
-        self.machine = None
+        try:
+            if self.machine == None or not self.machine.running:
+                self.prepare_machine()
+            self.machine.run()
+        except core.TuringException as e:
+            wx.MessageBox(str(e), 'Error', wx.OK|wx.ICON_ERROR)
+        else:
+            self.update_values()
+                
         self.enable_editing(True)
     
     def step(self, event):
-        if self.machine == None:
-            self.prepare_machine()
-            self.enable_editing(False)
+        try:
+            if self.machine == None or not self.machine.running:
+                self.prepare_machine()
+                self.enable_editing(False)
             
-        self.machine.run_step()
-
-        self.update_values()
-                                  
-        for stack_nr, stack in enumerate(self.machine.stacks):
-            self.stacks[stack_nr].SetLabel(''.join(stack))
+            self.machine.get_next_action()
+            self.update_values()
+            self.update_current_action()
+            self.machine.run_next_action()
         
-        self.update_current_action()
-        
-        if self.machine.state == HALT_STATE:
-            wx.MessageBox('Program Complete', 'Info', wx.OK|wx.ICON_INFORMATION)
-            self.machine = None
-            self.enable_editing(True)
+            if self.machine.state == HALT_STATE:
+                wx.MessageBox('Program Complete', 'Info', wx.OK|wx.ICON_INFORMATION)
+                self.enable_editing(True)
+        except core.TuringException as e:
+            wx.MessageBox(str(e), 'Error', wx.OK|wx.ICON_ERROR)
 
     def clear_values(self, event):
         for tape in self.tapes:
