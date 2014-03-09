@@ -68,7 +68,7 @@ class Main(interface.Interface):
             self.left_sizer.Layout()
 
     
-    def clear(self):
+    def clear_tape_list(self):
         while len(self.tapes) > 1: #A turing machine should have at least one tape
             self.remove_tape(None) #We provide the event as None because we run the function manually
         while len(self.stacks) > 1:
@@ -82,7 +82,7 @@ class Main(interface.Interface):
             file_path = openFileDialog.GetPath()
             openFileDialog.Destroy()
             
-            self.clear()
+            self.clear_tape_list()
             
             f = open(file_path, 'r')
             config_line = f.readline()
