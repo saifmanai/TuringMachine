@@ -156,8 +156,10 @@ class Main(interface.Interface):
             tape_ctrl = self.tape_panels[tape_nr].tape
             tape_ctrl.SetValue("")
             tape_ctrl.SetValue(''.join(tape_entry['tape']))
-            current_pos = tape_entry['position']
-            tape_ctrl.SetStyle(current_pos, current_pos+1, CURRENT_POS_STYLE)
+
+            if self.machine.running:
+                current_pos = tape_entry['position']
+                tape_ctrl.SetStyle(current_pos, current_pos+1, CURRENT_POS_STYLE)
             
         for stack_nr, stack in enumerate(self.machine.stacks):
             self.stack_panels[stack_nr].stack.SetLabel(''.join(stack))
@@ -207,8 +209,13 @@ class Main(interface.Interface):
                 row += 1
             
         self.machine.init()
+
+    def end_running(self):
         self.update_values()
-        
+        self.update_current_action()
+        self.machine = None
+        self.enable_editing(True)
+    
     def run(self, event):
         try:
             if self.machine == None or not self.machine.running:
@@ -216,32 +223,26 @@ class Main(interface.Interface):
             self.machine.run()
         except core.TuringException as e:
             wx.MessageBox(str(e), 'Error', wx.OK|wx.ICON_ERROR)
-        else:
-            self.update_values()
 
-        self.machine = None
-        self.enable_editing(True)
+        self.end_running()
     
     def step(self, event):
         try:
-            if self.machine == None:
-                self.prepare_machine()
-                self.enable_editing(False)
-            elif self.machine.state == HALT_STATE:
-                self.update_values()
-                self.update_current_action()
+            if self.machine != None and self.machine.state == HALT_STATE:
+                self.end_running()
                 wx.MessageBox('Program Complete', 'Info', wx.OK|wx.ICON_INFORMATION)
-                self.machine = None
-                self.enable_editing(True)
             else:
+                if self.machine == None:
+                    self.prepare_machine()
+                    self.enable_editing(False)
+                    
                 self.update_values()
                 self.machine.get_next_action()
                 self.update_current_action()
                 self.machine.run_next_action()
         except core.TuringException as e:
             wx.MessageBox(str(e), 'Error', wx.OK|wx.ICON_ERROR)
-            self.machine = None
-            self.enable_editing(True)
+            self.end_running()
 
     def clear_values(self, event):
         for tape_panel in self.tape_panels:

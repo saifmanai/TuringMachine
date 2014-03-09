@@ -94,9 +94,9 @@ class Interface(wx.Frame):
         self.program_table.CreateGrid(40,7)
         self.program_table.SetRowLabelSize(0) #Set to zero to remove the first column containing the name of each row
         self.program_table.SetColLabelValue(0, "State")
-        self.program_table.SetColLabelValue(1, "Read Values")
+        self.program_table.SetColLabelValue(1, "Read Tapes")
         self.program_table.SetColLabelValue(2, "Read Stacks")
-        self.program_table.SetColLabelValue(3, "Write Values")
+        self.program_table.SetColLabelValue(3, "Write Tapes")
         self.program_table.SetColLabelValue(4, "Write Stacks")
         self.program_table.SetColLabelValue(5, "Move")
         self.program_table.SetColLabelValue(6, "Next State")
