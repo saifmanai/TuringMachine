@@ -37,7 +37,7 @@ class Interface(wx.Frame):
         self.step_btn = wx.Button(main_btn_panel, label="Step")
         main_btn_sizer.Add(self.step_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
 
-        self.clear_btn = wx.Button(main_btn_panel, label="Clear")
+        self.clear_btn = wx.Button(main_btn_panel, label="Clear Values")
         main_btn_sizer.Add(self.clear_btn, 0, wx.EXPAND|wx.RIGHT, BUTTONS_SPACING)
         #===================================
 

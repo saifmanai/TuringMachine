@@ -176,11 +176,12 @@ class Main(interface.Interface):
             attr.SetBackgroundColour(wx.GREEN)
             self.program_table.SetRowAttr(self.machine.current_action_id, attr)
             self.program_table.MakeCellVisible(self.machine.current_action_id, 0)
+            self.last_action = self.machine.current_action_id
         else:
             self.program_table.MakeCellVisible(0, 0)
         
         self.program_table.Refresh()
-        self.last_action = self.machine.current_action_id
+        
 
     #Creates a turing machine and prepares it for running
     def prepare_machine(self):
