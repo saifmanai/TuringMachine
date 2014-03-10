@@ -1,17 +1,22 @@
+
+#core.py: Contains the base Turing Machine
+
+
+#Exceptions used by the Turing Machine
 class TuringException(Exception): 
     def __init__(self, value): 
         Exception.__init__(self) 
         self.value = value 
     def __str__(self): 
         return self.value 
-  
+
 class TuringSetupException(TuringException): 
     pass
-  
+
 class TuringRuntimeException(TuringException): 
     pass
-  
-  
+
+
 class TuringMachine: 
     def __init__(self, state_initial=0, state_halt='h', alphabet=(' ',0,1), symbol_nowrite='-', dir_left='<', dir_right='>', dir_stay='-'): 
         self.alphabet = alphabet
@@ -32,6 +37,7 @@ class TuringMachine:
     def add_tape(self, tape): 
         if not type(tape) is list:  
             raise TuringSetupException("tape is not of type 'list'")
+        
         #Check if all symbols are from the table of valid symbols
         for symbol in tape: 
             if not symbol in self.alphabet:
@@ -46,12 +52,15 @@ class TuringMachine:
         self.stacks.append(stack)
 
     
-    def add_action(self, state, read_values, pop_values, write_values, push_values, directions, next_state): 
-        read_values = tuple(read_values) #Convert to tuple because you can't use a list as an index
-        pop_values = tuple(pop_values) #Convert to tuple because you can't use a list as an index
+    def add_action(self, state, read_values, pop_values, write_values, push_values, directions, next_state):
+        #Convert to tuples because you can't use a list as an index
+        read_values = tuple(read_values)
+        pop_values = tuple(pop_values)
 
+        #Check if the directions match the valid ones
         for direction in directions: 
-            if direction != self.dir_left and direction != self.dir_right and direction != self.dir_stay:  raise TuringSetupException("Invalid direction '%s'" % direction) 
+            if direction != self.dir_left and direction != self.dir_right and direction != self.dir_stay:
+                raise TuringSetupException("Invalid direction '%s'" % direction) 
   
         self.actions[(state, read_values, pop_values)] = dict(id=self.nr_actions, write_values=write_values, push_values=push_values, directions=directions, next_state=next_state) #Add action to list
         self.nr_actions += 1 #Used to give each action an id
@@ -106,7 +115,7 @@ class TuringMachine:
             pop_values.append(self._pop(stack_nr)) 
         pop_values = tuple(pop_values) 
 
-        #Get the correspondant action for the combination of state , read values and stack values
+        #Get the correspondant action for the combination of state , read values and stack values (if it exists)
         index = (self.state, read_values, pop_values) 
         if not index in self.actions: raise TuringRuntimeException("No action defined for state '%(state)s' and values (%(read)s), (%(pop)s)" % dict(state=self.state, read=read_values, pop=pop_values)) 
         self.current_action = self.actions[index]
@@ -115,7 +124,7 @@ class TuringMachine:
     def run_next_action(self):
         if not self.running:
             return
-        
+
         for tape_nr, tape_entry in enumerate(self.tapes):
             self._write(tape_nr, self.current_action['write_values'][tape_nr])
 
@@ -128,7 +137,7 @@ class TuringMachine:
         self.state = self.current_action['next_state'] 
 
         if self.state == self.state_halt:
-            self.running = False  
+            self.running = False
         
     def init(self):
         if len(self.tapes) == 0: raise TuringRuntimeException("No tapes defined!")
@@ -142,11 +151,11 @@ class TuringMachine:
         while self.state != self.state_halt:
             self.get_next_action()
             self.run_next_action()
-  
-  
-if __name__ == "__main__":
 
-    #Usage example with addition code
+
+
+#test code, using addition
+if __name__ == "__main__":
     blank=' '
     nowrite = '-'
     tape1 = [1,0,1,1,1,0]

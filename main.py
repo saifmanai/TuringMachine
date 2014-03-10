@@ -1,7 +1,5 @@
-import core
-import interface
-import wx
-import wx.grid as gridlib
+
+#main.py: Adds functionality to the interface and connects it to the core Turing Machine module
 
 #Configuration
 HALT_STATE = 'halt'
@@ -10,12 +8,18 @@ VISUAL_BLANK_SYMBOL = '_'
 CURRENT_POS_STYLE = wx.TextAttr(wx.Colour(0, 0, 0), colBack=wx.Colour(0, 200, 255))
 
 
+import core
+import interface
+import wx
+import wx.grid as gridlib
+
+
 class Main(interface.Interface):
     def __init__(self, *args, **kargs):
         interface.Interface.__init__(self, *args, **kargs)
 
-        #Binding buttons to functions to be executed
-        #===================================
+
+        #Define which function will be called for  each button pressed
         self.Bind(wx.EVT_BUTTON, self.add_tape, self.add_tape_btn)
         self.Bind(wx.EVT_BUTTON, self.remove_tape, self.remove_tape_btn)
         
@@ -29,14 +33,15 @@ class Main(interface.Interface):
         self.Bind(wx.EVT_BUTTON, self.load_program, self.load_btn)
         self.Bind(wx.EVT_BUTTON, self.save_program, self.save_btn)
         self.Bind(wx.EVT_BUTTON, self.clear_program, self.clear_program_btn)
-        #===================================
+
         
         self.tape_panels = []
         self.stack_panels = []
 
+        self.add_tape(None)  #Our turing machine needs at least 1 tape...
+        self.add_stack(None) #...and 1 stack
+        
         self.machine = None
-        self.add_tape(None)
-        self.add_stack(None)
         self.last_action = -1
 
         
@@ -55,12 +60,14 @@ class Main(interface.Interface):
         self.tapes_sizer.Layout()
         self.tape_panels.append(panel)
 
+
     def remove_tape(self, event):
         if len(self.tape_panels) > 1:
             last_tape = self.tape_panels.pop()
             self.tapes_sizer.Remove(last_tape)
             last_tape.Destroy()
             self.tapes_sizer.Layout()
+
 
     def add_stack(self, event):
         panel = wx.Panel(self.stacks_panel, style=wx.NO_BORDER)
@@ -77,17 +84,19 @@ class Main(interface.Interface):
         self.left_sizer.Layout()
         self.stack_panels.append(panel)
 
+
     def remove_stack(self, event):
         if len(self.stack_panels) > 1:
             last_stack = self.stack_panels.pop()
             self.stacks_sizer.Remove(last_stack)
             last_stack.Destroy()
             self.left_sizer.Layout()
-        self.clear_program(None)
+        self.clear_program(None) #We call the same functions as the buttons, but we aren't buttons so we provide the event as None
+
     
     def clear_tape_list(self):
-        while len(self.tape_panels) > 1: #A turing machine should have at least one tape
-            self.remove_tape(None) #We provide the event as None because we run the function manually
+        while len(self.tape_panels) > 1:
+            self.remove_tape(None)
         while len(self.stack_panels) > 1:
             self.remove_stack(None)
         self.clear_values(None)
@@ -95,7 +104,7 @@ class Main(interface.Interface):
     
     def load_program(self, event):
         openFileDialog = wx.FileDialog(self, "Open Turing Machine program", wildcard="Turing Machine program (*.tm)|*.tm", style=wx.FD_OPEN|wx.FD_FILE_MUST_EXIST)
-        if openFileDialog.ShowModal() == wx.ID_OK: #ShowModal opens the dialog box . wx.ID_OK = OK button being pressed
+        if openFileDialog.ShowModal() == wx.ID_OK:
             file_path = openFileDialog.GetPath()
             openFileDialog.Destroy()
             
@@ -118,7 +127,8 @@ class Main(interface.Interface):
                 row += 1
                 
             f.close()
-        
+    
+    
     def save_program(self, event):
         saveFileDialog = wx.FileDialog(self, "Save Turing Machine program", wildcard="Turing Machine program (*.tm)|*.tm", style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
         if saveFileDialog.ShowModal() == wx.ID_OK:
@@ -144,13 +154,16 @@ class Main(interface.Interface):
                     
             f.close()
 
+
     def clear_program(self, event):
         self.program_table.ClearGrid()
         self.initial_state_ctrl.SetValue("")
 
     
-    #Used to disable editing while running by step
+    
     def enable_editing(self, bool_enable):
+        #Used to disable editing while running by Step
+        
         for tape_panel in self.tape_panels:
             tape_panel.tape.SetEditable(bool_enable)
             
@@ -166,8 +179,9 @@ class Main(interface.Interface):
         self.program_table.EnableEditing(bool_enable)
         
 
-    #Updates tape values and positions, and stack values with those from the machine
     def update_values(self):
+        #Updates tape values and positions, and stack values with those from the machine
+        
         for tape_nr, tape_entry in enumerate(self.machine.tapes):
             tape_ctrl = self.tape_panels[tape_nr].tape
             tape_ctrl.SetValue("")
@@ -180,7 +194,7 @@ class Main(interface.Interface):
         for stack_nr, stack in enumerate(self.machine.stacks):
             self.stack_panels[stack_nr].stack.SetLabel(''.join(stack))
 
-    #Highlight the last action 
+
     def update_current_action(self):
         if self.last_action != -1:
             attr = gridlib.GridCellAttr()
@@ -199,8 +213,9 @@ class Main(interface.Interface):
         self.program_table.Refresh()
         
 
-    #Creates a turing machine and prepares it for running
     def prepare_machine(self):
+        #Creates a turing machine and adds the tapes, stacks and actions to it
+        
         initial_state = self.initial_state_ctrl.GetValue()
         self.machine = core.TuringMachine(state_initial=initial_state, state_halt=HALT_STATE, alphabet=(REAL_BLANK_SYMBOL,'0','1'))
 
@@ -209,7 +224,7 @@ class Main(interface.Interface):
         for stack_panel in self.stack_panels:
             self.machine.add_stack(list(stack_panel.stack.GetLabel()))
 
-        #Add the actions from the table to the machine
+        #Parse the actions from the table and add them to the machine
         row = 0
         list_finished = False
         while not list_finished:
@@ -230,11 +245,13 @@ class Main(interface.Interface):
             
         self.machine.init()
 
+
     def end_running(self):
         self.update_values()
         self.update_current_action()
         self.machine = None
         self.enable_editing(True)
+
     
     def run(self, event):
         try:
@@ -246,6 +263,7 @@ class Main(interface.Interface):
             self.machine.running = False
 
         self.end_running()
+
     
     def step(self, event):
         try:
@@ -265,6 +283,7 @@ class Main(interface.Interface):
             wx.MessageBox(str(e), 'Error', wx.OK|wx.ICON_ERROR)
             self.machine.running = False
             self.end_running()
+
 
     def clear_values(self, event):
         for tape_panel in self.tape_panels:
