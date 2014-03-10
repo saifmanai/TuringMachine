@@ -39,8 +39,9 @@ class Main(interface.Interface):
         self.tape_panels = []
         self.stack_panels = []
 
-        self.add_tape(None)  #Our turing machine needs at least 1 tape...
-        self.add_stack(None) #...and 1 stack
+        #our turing machine needs at least 1 tape and 1 stack
+        self.add_tape(None) #We call the same functions as the buttons, but we aren't buttons so we provide the event as None
+        self.add_stack(None) 
         
         self.machine = None
         self.last_action = -1
@@ -92,7 +93,6 @@ class Main(interface.Interface):
             self.stacks_sizer.Remove(last_stack)
             last_stack.Destroy()
             self.left_sizer.Layout()
-        self.clear_program(None) #We call the same functions as the buttons, but we aren't buttons so we provide the event as None
 
     
     def clear_tape_list(self):
