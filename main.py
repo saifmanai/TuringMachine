@@ -1,17 +1,18 @@
 
 #main.py: Adds functionality to the interface and connects it to the core Turing Machine module
 
-#Configuration
-HALT_STATE = 'halt'
-REAL_BLANK_SYMBOL = ' '
-VISUAL_BLANK_SYMBOL = '_'
-CURRENT_POS_STYLE = wx.TextAttr(wx.Colour(0, 0, 0), colBack=wx.Colour(0, 200, 255))
-
 
 import core
 import interface
 import wx
 import wx.grid as gridlib
+
+
+#Configuration
+HALT_STATE = 'halt'
+REAL_BLANK_SYMBOL = ' '
+VISUAL_BLANK_SYMBOL = '_'
+CURRENT_POS_STYLE = wx.TextAttr(wx.Colour(0, 0, 0), colBack=wx.Colour(0, 200, 255))
 
 
 class Main(interface.Interface):
@@ -109,6 +110,7 @@ class Main(interface.Interface):
             openFileDialog.Destroy()
             
             self.clear_tape_list()
+            self.clear_program(None)
             
             f = open(file_path, 'r')
             config_line = f.readline()
@@ -158,7 +160,6 @@ class Main(interface.Interface):
     def clear_program(self, event):
         self.program_table.ClearGrid()
         self.initial_state_ctrl.SetValue("")
-
     
     
     def enable_editing(self, bool_enable):
@@ -177,6 +178,7 @@ class Main(interface.Interface):
         self.clear_program_btn.Enable(bool_enable)
 
         self.program_table.EnableEditing(bool_enable)
+        self.initial_state_ctrl.SetEditable(bool_enable)
         
 
     def update_values(self):
