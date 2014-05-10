@@ -4,6 +4,10 @@
 import threading
 import time
 
+STEP_READ = 0
+STEP_WRITE = 1
+STEP_MOVE = 2
+STEP_STATE = 3
 
 class TuringProgram:
     def __init__(self, name):
@@ -60,7 +64,7 @@ class TuringProgram:
 
 
 class TuringMachine(threading.Thread):
-    def __init__(self, program=None, speed=1, listener=None):
+    def __init__(self, program=None, speed=4, listener=None):
         threading.Thread.__init__(self)
         
         self.program = program
@@ -112,43 +116,58 @@ class TuringMachine(threading.Thread):
         self.state = self.program.state_initial
         self.running = True
         self.should_continue.set()
-
-        if self.listener != None:
-            self.listener(self)
         
         while self.running:
             self.should_continue.wait()
-            self.run_step()
-            if self.speed != -1:
+            
+            self.read_step()
+            self.post_step(STEP_READ)
+            
+            self.write_step()
+            self.post_step(STEP_WRITE)
+            
+            self.move_step()
+            self.post_step(STEP_MOVE)
+            
+            self.state_change_step()
+            self.post_step(STEP_STATE)
+
+
+    def post_step(self, step_type):
+        if self.listener != None:
+            self.listener(self, step_type)
+            
+        if hasattr(self, 'error'):
+            raise RuntimeError(self.error)
+    
+        if self.speed != -1:
                 time.sleep(1/float(self.speed))
 
-
-    def run_step(self):
-        read_values = [] 
+    
+    def read_step(self):
+        read_values = []
         for tape_nr, tape in enumerate(self.program.tapes): 
             read_values.append(self.read(tape_nr)) 
-        
+            
         self.action = self.program.get_action(self.state, read_values)
         if self.action == None:
             self.error = "No action defined for state '%(state)s' and values (%(read)s)" % dict(state=self.state, read=','.join(read_values))
             self.running = False
-            if self.listener != None:
-                self.listener(self)
-            raise RuntimeError(self.error)
-        
-
+            
+                
+    def write_step(self):
         for tape_nr, tape in enumerate(self.program.tapes):
-            self.write(tape_nr, self.action['write_values'][tape_nr])
+              self.write(tape_nr, self.action['write_values'][tape_nr])
+
+    def move_step(self):
+        for tape_nr, tape in enumerate(self.program.tapes):
             self.move(tape_nr, self.action['directions'][tape_nr])
 
+    def state_change_step(self):
         self.state = self.action['next_state']
-            
         if self.state == self.program.state_final:
             self.running = False
-        
-        if self.listener != None:
-            self.listener(self)
-        
+
 
 
 if __name__ == "__main__":
@@ -161,14 +180,15 @@ if __name__ == "__main__":
                              init 1 0 > init
                              init _ _ - halt""")
 
-    def print_tapes(tm):
-        for tape, pos in zip(tm.program.tapes, tm.tapes_pos):
-            tcopy = list(tape)
+    def print_tapes(tm, step_type):
+        if step_type == STEP_READ:
+            tcopy = list(tm.program.tapes[0])
+            pos = tm.tapes_pos[0]
             tcopy.insert(pos, '[')
             tcopy.insert(pos+2, ']')
             print(''.join(tcopy))
-        if not tm.running:
-            print("Final value (trimmed): " + (''.join(tape)).strip('_'))
+        elif step_type == STEP_STATE and not tm.running:
+            print("Final value (trimmed): " + (''.join(tm.program.tapes[0])).strip('_'))
             
     machine = TuringMachine(inversion, listener=print_tapes)
     machine.start()

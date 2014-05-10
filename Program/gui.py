@@ -34,7 +34,7 @@ class MainWindow(wx.Frame):
         speed_label = wx.StaticText(controls_panel, label="Simulation speed (OPs/sec): ") 
         controls_panel.Sizer.Add(speed_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, BORDER)
         
-        speed_input = wx.SpinCtrl(controls_panel, min=1, initial=3, value='3', size=(60,-1))
+        speed_input = wx.SpinCtrl(controls_panel, min=1, initial=8, value='8', size=(60,-1))
         controls_panel.Sizer.Add(speed_input, 0, wx.EXPAND|wx.ALL, BORDER)
 
         run_pause_button = wx.Button(controls_panel, label="Run")

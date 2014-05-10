@@ -70,26 +70,26 @@ class Main:
         self.window.reset_button.Enable(False)
         self.window.enable_tapes(True)
         self.window.select_action(-1)
+        
+        for tape_nr, tape in enumerate(self.tm.program.tapes):
+            self.window.update_tape(tape_nr, ''.join(tape), -1)
 
-    def tm_listener(self, tm):
-        wx.CallAfter(self.window_updater, tm)
+    def tm_listener(self, tm, state):
+        wx.CallAfter(self.window_updater, tm, state)
     
-    def window_updater(self, tm):
+    def window_updater(self, tm, state):
         if hasattr(tm, 'error'):
             wx.MessageBox(str(tm.error), 'Error', wx.OK|wx.ICON_ERROR)
-        else:
-            for tape_nr, tape in enumerate(tm.program.tapes):
-                if not tm.running:
-                    pos = -1
-                else:
-                    pos = tm.tapes_pos[tape_nr]
-                self.window.update_tape(tape_nr, ''.join(tape), pos)
-            
-            if hasattr(tm, 'action') and tm.action != None:
-                self.window.select_action(tm.action['id'])
-
-        if tm.running == False:
             self.reset()
+        else:
+            if tm.running:
+                for tape_nr, tape in enumerate(tm.program.tapes):
+                    self.window.update_tape(tape_nr, ''.join(tape), tm.tapes_pos[tape_nr])
+                
+                if hasattr(tm, 'action') and tm.action != None:
+                    self.window.select_action(tm.action['id'])
+            else:
+                self.reset()
                 
 
 if __name__=='__main__':
