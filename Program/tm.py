@@ -151,7 +151,6 @@ class TuringMachine(threading.Thread):
         self.should_continue = threading.Event()  #allows us to pause the simulation. clear() to pause and set() to resume
 
 
-
     """
     The main method of the machine, that handles the whole simulation
     """
@@ -263,7 +262,7 @@ class TuringMachine(threading.Thread):
 
 
 
-#test code
+#Test Code
 if __name__ == "__main__":
     tape = "0100101"
     print("Initial value: "+tape)
