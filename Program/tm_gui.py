@@ -96,7 +96,7 @@ class Main(wx.Frame):
             random.seed()
             value = list()
             for i in range(random.randint(4, 10)):
-                value.append(random.choice(self.program.alphabet))
+                value.append(random.choice(self.program.input_values))
             tape_entry.SetValue(''.join(value))
         tape_row.Bind(wx.EVT_BUTTON, value_generator, gen_button)
 
@@ -201,8 +201,8 @@ class Main(wx.Frame):
                 for tape_nr, tape in enumerate(tm.program.tapes):
                     self.update_tape(tape_nr, ''.join(tape), tm.tapes_pos[tape_nr])
                 
-                if hasattr(tm, 'action') and tm.action != None:
-                    self.select_action(tm.action['id'])
+                if tm.current_action != None:
+                    self.select_action(tm.current_action['id'])
             else:
                 self.reset()
 

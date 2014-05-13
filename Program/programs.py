@@ -1,5 +1,8 @@
 
-#programs.py: The list of Turing Programs used by the machine
+"""
+This file is a list of definitions for all the turing programs
+used for our machine's GUI.
+"""
 
 from tm import TuringProgram
 

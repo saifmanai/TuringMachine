@@ -1,61 +1,120 @@
 
-#tm.py: The base Turing Machine
+"""
+This is the main turing module/library.
+It defines 2 classes TuringProgram and the TuringMachine itself.
+"""
+
 
 import threading
 import time
 
+
+#used for the TuringMachine's listener, in order to specify the current step in the simulation
 STEP_READ = 0
 STEP_WRITE = 1
 STEP_MOVE = 2
 STEP_STATE = 3
 
+
+"""
+This class is used to help define a Turing Machine program
+and its associated data (like alphabet, special states and symbols)
+Examples of turing programs can be viewed in programs.py
+"""
 class TuringProgram:
+    
+    """
+    The constructor method
+    [name] = the name of the program, used for the GUI
+    """
     def __init__(self, name):
         self.name = name
 
-        #default values
-        self.alphabet = "01"
-        self.symbol_blank = '_'
-        self.dir_left = '<'
-        self.dir_right = '>'
-        self.dir_none = '-'
-        self.state_initial = 'init'
-        self.state_final = 'halt'
+        #Default values
+        self.input_values = "01"     #a string, where each character represents a value. This is currently only used for the GUI's tape value generator.
+        self.symbol_blank = '_'      #a single character/symbol. Used when extending the tapes.
+        self.dir_left = '<'          #symbol for moving the pointer left
+        self.dir_right = '>'         #symbol for moving the pointer right
+        self.dir_none = '-'          #symbol for not chaning the position
+        self.state_initial = 'init'  #the state set when the machine starts
+        self.state_final = 'halt'    #the state in which the machine stops running
 
-        self.tapes = []
-        self.actions = list()
+        self.tapes = list()          #The list of tapes used by this program. Each tape is a list of characters (not a string)
+        self.actions = list()        #The program itself, as a list of actions (see the add_action method for the structure of an action)
 
-    
-    def set_alphabet(self, alphabet, blank):
-        self.alphabet = alphabet
+
+    """
+    The alphabet of a turing machine, in other words the list of tape valeus it accepts.
+    Note: Our code does not currently enforce values to be part of the alphabet.
+    """
+    def set_alphabet(self, input_values, blank):
+        self.input_values = input_values
         self.symbol_blank = blank
 
+
+    """
+    Set the symbols used for the move instructions.
+    """
     def set_directions(self, left, right, none):
         self.dir_left = left
         self.dir_right = right
         self.dir_none = none
 
+
+    """
+    Shortcut function to set both initial and final states
+    """
     def set_limit_states(self, initial, final):
         self.state_initial = initial
         self.state_final = final
 
+
+    """
+    Shortcut function for adding tapes.
+    """
     def set_tapes(self, *arg):
         self.tapes = list(arg)
-    
+
+
+    """
+    Add a single action to the program.
+    If the machine's current state is the one specified by [state], and it read from each tape its corresponding value from [read_values],
+    it will replace those values with the ones from [write_values], then move the tapes according to the [directions]
+    and finally change the machine's state to [next_state]
+    """
     def add_action(self, state, read_values, write_values, directions, next_state):
-        self.actions.append(dict(id=len(self.actions), state=state, read_values=read_values, write_values=write_values, directions=directions, next_state=next_state))
-        
+        self.actions.append(dict(id=len(self.actions),
+                                 state=state,
+                                 read_values=read_values,
+                                 write_values=write_values,
+                                 directions=directions,
+                                 next_state=next_state))
+
+
+    """
+    A shortcut to set all actions at once, using a string table.
+    (See programs.py for examples)
+    """
     def set_actions(self, table):
         self.actions = list()
         for line in table.split('\n'):
             columns = line.split()
+            
             state = columns[0]
+            
+            #if we have multiple tapes, these columns will have multiple values, separated by commas
             read_values = columns[1].split(',')
             write_values = columns[2].split(',')
             directions = columns[3].split(',')
+            
             next_state = columns[4]
+            
             self.add_action(state, read_values, write_values, directions, next_state)
 
+
+    """
+    Used by the TuringMachine, to search for an action in the list, based on its current [state] and [read_values]
+    """
     def get_action(self, state, read_values):
         for action_id, action in enumerate(self.actions):
             if action['state'] == state and action['read_values'] == read_values:
@@ -63,7 +122,25 @@ class TuringProgram:
         return None
 
 
+
+"""
+The Turing machine simulator class
+It's threaded, so it can be displayed in a GUI and multiple simulations can be run at the same time
+All methods are for internal use,
+to use the machine you just need to specify the required values in its constructor, and then call start()
+"""
 class TuringMachine(threading.Thread):
+
+    """
+    The constructor method
+    [program] = the TuringProgram that will be used for this machine
+    [speed] = the simulation's speed (in number of operations/steps per second. If it's -1, the simulation will be run in realtime
+              (1 step = 1 read, write, move or state change operation)
+    [listener] = a function that will be called after every step, used for showing progress of the simulation
+                 The function recieves the following arguments:
+                 [tm] = the turing machine that called that function
+                 [step] = a number that specifies the last step type performed by the machine (STEP_READ, STEP_WRITE, STEP_MOVE, or STEP_STATE for state changes)
+    """
     def __init__(self, program=None, speed=4, listener=None):
         threading.Thread.__init__(self)
         
@@ -71,54 +148,36 @@ class TuringMachine(threading.Thread):
         self.speed = speed
         self.listener = listener
         
-        self.should_continue = threading.Event()
-
-        
-    def set_program(self, program):
-        self.program = program
+        self.should_continue = threading.Event()  #allows us to pause the simulation. clear() to pause and set() to resume
 
 
-    def read(self, tape_nr):
-        tape = self.program.tapes[tape_nr]
-        return tape[self.tapes_pos[tape_nr]]
 
-  
-    def write(self, tape_nr, value):
-        tape = self.program.tapes[tape_nr]
-        tape[self.tapes_pos[tape_nr]] = value
-
-
-    def move(self, tape_nr, direction):
-        tape = self.program.tapes[tape_nr]
-        if direction == self.program.dir_left:
-            if self.tapes_pos[tape_nr] <= 0:  
-                tape.insert(0, self.program.symbol_blank) 
-                self.tapes_pos[tape_nr] = 0
-            else: 
-                self.tapes_pos[tape_nr] -= 1
-        elif direction == self.program.dir_right: 
-            self.tapes_pos[tape_nr] += 1
-            if self.tapes_pos[tape_nr] >= len(tape): 
-                tape.append(self.program.symbol_blank)
-    
-    
+    """
+    The main method of the machine, that handles the whole simulation
+    """
     def run(self):
         if self.program == None: raise RuntimeError("No program specified")
 
-        self.tapes_pos = list()
+        #prepare a list to store the current positions for each tape, and then fill it with the starting position, 0
+        self.tapes_pos = list()                   
         for i in range(len(self.program.tapes)):
             self.tapes_pos.append(0)
 
+        #make sure all tapes have at least one value, to prevent issues when reading/writing
         for tape in self.program.tapes:
             if len(tape) == 0:
                 tape.append(self.program.symbol_blank)
-        
-        self.state = self.program.state_initial
+
+        self.current_state = self.program.state_initial
+        self.current_action = None
         self.running = True
-        self.should_continue.set()
-        
+        self.should_continue.set()  #start in running (non-paused) state
+
+
+        #The main loop. It runs a standard Turing cycle (read, write, move, change state),
+        #until it encounters the final/halt state of the program
         while self.running:
-            self.should_continue.wait()
+            self.should_continue.wait()  #if the machine is paused (should_continue.clear()), this will block until it resumes (should_continue.set())
             
             self.read_step()
             self.post_step(STEP_READ)
@@ -133,43 +192,78 @@ class TuringMachine(threading.Thread):
             self.post_step(STEP_STATE)
 
 
+    """
+    Run after each simulation step.
+    It calls the listener to notify of the changes, raises an error if one was encountered in the last step,
+    and then pauses a bit to allow you to follow the simulation
+    """
     def post_step(self, step_type):
         if self.listener != None:
             self.listener(self, step_type)
-            
+        
+        #we set errors using self.error instead of raising them directly when we enconter them,
+        #in order to allow the listener to handle the error itself
+        #because otherwise it couldn't know about an error raised in another thread)
         if hasattr(self, 'error'):
             raise RuntimeError(self.error)
     
         if self.speed != -1:
-                time.sleep(1/float(self.speed))
+            time.sleep(1/float(self.speed))
 
-    
+
+    """
+    In the read step, the machine reads the current value from each tape,
+    and then uses these values and the machine's current state to search for a corresponding action in the program's list
+    """
     def read_step(self):
         read_values = []
         for tape_nr, tape in enumerate(self.program.tapes): 
-            read_values.append(self.read(tape_nr)) 
+            read_values.append(tape[self.tapes_pos[tape_nr]]) 
             
-        self.action = self.program.get_action(self.state, read_values)
-        if self.action == None:
+        self.current_action = self.program.get_action(self.current_state, read_values)
+        if self.current_action == None:
             self.error = "No action defined for state '%(state)s' and values (%(read)s)" % dict(state=self.state, read=','.join(read_values))
             self.running = False
-            
-                
+
+    
+    """
+    Writes new values on each tape, as dictated by the program's current action
+    """
     def write_step(self):
         for tape_nr, tape in enumerate(self.program.tapes):
-              self.write(tape_nr, self.action['write_values'][tape_nr])
+              tape[self.tapes_pos[tape_nr]] = self.current_action['write_values'][tape_nr]
 
+
+    """
+    Moves each tape according to the program's current action
+    """
     def move_step(self):
         for tape_nr, tape in enumerate(self.program.tapes):
-            self.move(tape_nr, self.action['directions'][tape_nr])
+            direction = self.current_action['directions'][tape_nr]
+            if direction == self.program.dir_left:
+                if self.tapes_pos[tape_nr] <= 0:  
+                    tape.insert(0, self.program.symbol_blank)  #if we reached the left edge, insert a new blank value...
+                    self.tapes_pos[tape_nr] = 0                #...and make sure the position is at the new 0 edge
+                else: 
+                    self.tapes_pos[tape_nr] -= 1
+            elif direction == self.program.dir_right: 
+                self.tapes_pos[tape_nr] += 1
+                if self.tapes_pos[tape_nr] >= len(tape):
+                    tape.append(self.program.symbol_blank)  #if we reached the right edge, insert a new value
+            #else: the direction is assumed to be [dir_none]
 
+    
+    """
+    Changes the machine's state to the one specified by the current action's [next_state]
+    """
     def state_change_step(self):
-        self.state = self.action['next_state']
+        self.state = self.current_action['next_state']
         if self.state == self.program.state_final:
             self.running = False
 
 
 
+#test code
 if __name__ == "__main__":
     tape = "0100101"
     print("Initial value: "+tape)
