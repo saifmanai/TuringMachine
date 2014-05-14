@@ -1,7 +1,13 @@
 
 """
-This file is a list of definitions for all the turing programs
-used for our machine's GUI.
+File: programs.py
+A list of example programs, used for our machine's GUI.
+"""
+
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 
 from tm import TuringProgram
@@ -9,6 +15,10 @@ from tm import TuringProgram
 plist = list()
 
 
+"""
+Inversion
+This program simply inverts all digits in the inserted binary number.
+"""
 program = TuringProgram("Inversion")
 program.set_tapes(list("101001"))
 program.state_initial = 'invert'
@@ -19,7 +29,17 @@ invert _ _ - halt""")
 plist.append(program)
 
 
-program = TuringProgram("Palindrome")
+
+"""
+Palindrome Checker
+It uses 2 tapes: the first one is for the binary number that needs to be checked.
+The second one is used as a temporary storage and should be empty when running the program.
+The value inserted in the first tape is copied to the second one.
+Then, both tapes are checked for equality, but from opposite ends.
+If the value is a palindrome, the program will simply end.
+If it's not a plaindrome, the program will throw an error.
+"""
+program = TuringProgram("Palindrome Checker")
 program.set_tapes(list("101101"), [])
 program.state_initial = 'copy'
 program.set_actions("""\
@@ -35,6 +55,14 @@ test   _,_  _,_  -,- halt""")
 plist.append(program)
 
 
+
+"""
+Addition
+This program uses 3 tapes: 2 for the input values (as binary numbers),
+and the last one for the result (this one should be empty when running the program).
+The program moves to the right start of each value, and then adds each digit.
+The carry is stored using a separate state.
+"""
 program = TuringProgram("Addition")
 program.set_tapes(list("101001"), list("101101"), [])
 program.state_initial = 'move'

@@ -1,9 +1,15 @@
 
 """
-This is the main turing module/library.
+File: tm.py
+The main turing module/library.
 It defines 2 classes TuringProgram and the TuringMachine itself.
 """
 
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
+"""
 
 import threading
 import time
@@ -31,7 +37,8 @@ class TuringProgram:
         self.name = name
 
         #Default values
-        self.input_values = "01"     #a string, where each character represents a value. This is currently only used for the GUI's tape value generator.
+        self.input_values = "01"     #a string, where each character represents a value. This is 
+                                     #currently only used for the GUI's tape value generator.
         self.symbol_blank = '_'      #a single character/symbol. Used when extending the tapes.
         self.dir_left = '<'          #symbol for moving the pointer left
         self.dir_right = '>'         #symbol for moving the pointer right
@@ -39,8 +46,10 @@ class TuringProgram:
         self.state_initial = 'init'  #the state set when the machine starts
         self.state_final = 'halt'    #the state in which the machine stops running
 
-        self.tapes = list()          #The list of tapes used by this program. Each tape is a list of characters (not a string)
-        self.actions = list()        #The program itself, as a list of actions (see the add_action method for the structure of an action)
+        self.tapes = list()          #The list of tapes used by this program.
+                                     #Each tape is a list of characters (not a string)
+        self.actions = list()        #The program itself, as a list of actions (see the
+                                     #add_action method for the structure of an action)
 
 
     """
@@ -78,8 +87,9 @@ class TuringProgram:
 
     """
     Add a single action to the program.
-    If the machine's current state is the one specified by [state], and it read from each tape its corresponding value from [read_values],
-    it will replace those values with the ones from [write_values], then move the tapes according to the [directions]
+    If the machine's current state is the one specified by [state], and the value it read from 
+    each tape its corresponding value from [read_values], it will replace those values with
+    the ones from [write_values], then move the tapes according to the [directions]
     and finally change the machine's state to [next_state]
     """
     def add_action(self, state, read_values, write_values, directions, next_state):
@@ -113,7 +123,8 @@ class TuringProgram:
 
 
     """
-    Used by the TuringMachine, to search for an action in the list, based on its current [state] and [read_values]
+    Used by the TuringMachine, to search for an action in the list,
+    based on its current [state] and [read_values]
     """
     def get_action(self, state, read_values):
         for action_id, action in enumerate(self.actions):
@@ -126,20 +137,21 @@ class TuringProgram:
 """
 The Turing machine simulator class
 It's threaded, so it can be displayed in a GUI and multiple simulations can be run at the same time
-All methods are for internal use,
-to use the machine you just need to specify the required values in its constructor, and then call start()
+All methods are for internal use, to use the machine you just need to specify the required values
+in its constructor, and then call start()
 """
 class TuringMachine(threading.Thread):
 
     """
     The constructor method
     [program] = the TuringProgram that will be used for this machine
-    [speed] = the simulation's speed (in number of operations/steps per second. If it's -1, the simulation will be run in realtime
-              (1 step = 1 read, write, move or state change operation)
-    [listener] = a function that will be called after every step, used for showing progress of the simulation
-                 The function recieves the following arguments:
-                 [tm] = the turing machine that called that function
-                 [step] = a number that specifies the last step type performed by the machine (STEP_READ, STEP_WRITE, STEP_MOVE, or STEP_STATE for state changes)
+    [speed] = the simulation's speed (in number of steps per second)/ 
+              If it's -1, the simulation will be run in realtime
+    [listener] = a function that will be called after every step, used to show the progress
+                 of the simulation. It will receive the following arguments:
+                 [tm] = the turing machine that called the function
+                 [step] = a number which specifies the last step type performed by the machine 
+                 (STEP_READ, STEP_WRITE, STEP_MOVE, or STEP_STATE for state changes)
     """
     def __init__(self, program=None, speed=4, listener=None):
         threading.Thread.__init__(self)
@@ -148,7 +160,8 @@ class TuringMachine(threading.Thread):
         self.speed = speed
         self.listener = listener
         
-        self.should_continue = threading.Event()  #allows us to pause the simulation. clear() to pause and set() to resume
+        self.should_continue = threading.Event()  #allows us to pause the simulation.
+                                                  #clear() to pause and set() to resume
 
 
     """
@@ -157,7 +170,8 @@ class TuringMachine(threading.Thread):
     def run(self):
         if self.program == None: raise RuntimeError("No program specified")
 
-        #prepare a list to store the current positions for each tape, and then fill it with the starting position, 0
+        #prepare a list to store the current positions for each tape,
+        #and then fill it with the starting position, 0
         self.tapes_pos = list()                   
         for i in range(len(self.program.tapes)):
             self.tapes_pos.append(0)
@@ -176,7 +190,8 @@ class TuringMachine(threading.Thread):
         #The main loop. It runs a standard Turing cycle (read, write, move, change state),
         #until it encounters the final/halt state of the program
         while self.running:
-            self.should_continue.wait()  #if the machine is paused (should_continue.clear()), this will block until it resumes (should_continue.set())
+            self.should_continue.wait()  #if the machine is paused (by should_continue.clear()),
+                                         #this will block until it resumes (should_continue.set())
             
             self.read_step()
             self.post_step(STEP_READ)
@@ -193,8 +208,9 @@ class TuringMachine(threading.Thread):
 
     """
     Run after each simulation step.
-    It calls the listener to notify of the changes, raises an error if one was encountered in the last step,
-    and then pauses a bit to allow you to follow the simulation
+    It calls the listener to notify it of the changes,
+    raises an error, if one was encountered in the last step,
+    and then sleeps a bit, so the user can follow the simulation
     """
     def post_step(self, step_type):
         if self.listener != None:
@@ -212,7 +228,8 @@ class TuringMachine(threading.Thread):
 
     """
     In the read step, the machine reads the current value from each tape,
-    and then uses these values and the machine's current state to search for a corresponding action in the program's list
+    and then uses these values and the machine's current state to search for
+    a corresponding action in the program's list
     """
     def read_step(self):
         read_values = []
@@ -221,7 +238,8 @@ class TuringMachine(threading.Thread):
             
         self.current_action = self.program.get_action(self.current_state, read_values)
         if self.current_action == None:
-            self.error = "No action defined for state '%(state)s' and values (%(read)s)" % dict(state=self.current_state, read=','.join(read_values))
+            self.error = "No action defined for state '%(state)s' and values (%(read)s)" \
+                         % dict(state=self.current_state, read=','.join(read_values))
             self.running = False
 
     
@@ -240,15 +258,18 @@ class TuringMachine(threading.Thread):
         for tape_nr, tape in enumerate(self.program.tapes):
             direction = self.current_action['directions'][tape_nr]
             if direction == self.program.dir_left:
-                if self.tapes_pos[tape_nr] <= 0:  
-                    tape.insert(0, self.program.symbol_blank)  #if we reached the left edge, insert a new blank value...
-                    self.tapes_pos[tape_nr] = 0                #...and make sure the position is at the new 0 edge
+                if self.tapes_pos[tape_nr] <= 0:
+                    #if we reached the left edge, insert a new blank value...
+                    tape.insert(0, self.program.symbol_blank)
+                    #...and make sure the position is at the new 0 edge
+                    self.tapes_pos[tape_nr] = 0                
                 else: 
                     self.tapes_pos[tape_nr] -= 1
             elif direction == self.program.dir_right: 
                 self.tapes_pos[tape_nr] += 1
                 if self.tapes_pos[tape_nr] >= len(tape):
-                    tape.append(self.program.symbol_blank)  #if we reached the right edge, insert a new value
+                    #if we reached the right edge, insert a new value
+                    tape.append(self.program.symbol_blank)
             #else: the direction is assumed to be [dir_none]
 
     
