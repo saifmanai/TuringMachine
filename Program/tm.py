@@ -221,7 +221,7 @@ class TuringMachine(threading.Thread):
             
         self.current_action = self.program.get_action(self.current_state, read_values)
         if self.current_action == None:
-            self.error = "No action defined for state '%(state)s' and values (%(read)s)" % dict(state=self.state, read=','.join(read_values))
+            self.error = "No action defined for state '%(state)s' and values (%(read)s)" % dict(state=self.current_state, read=','.join(read_values))
             self.running = False
 
     
@@ -256,8 +256,8 @@ class TuringMachine(threading.Thread):
     Changes the machine's state to the one specified by the current action's [next_state]
     """
     def state_change_step(self):
-        self.state = self.current_action['next_state']
-        if self.state == self.program.state_final:
+        self.current_state = self.current_action['next_state']
+        if self.current_state == self.program.state_final:
             self.running = False
 
 
