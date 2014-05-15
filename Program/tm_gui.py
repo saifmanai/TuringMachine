@@ -196,13 +196,18 @@ class MainWindow(wx.Frame):
                 self.speed_input.Enable(False)
                 self.run_pause_button.SetLabel("Pause")
 
-        #if we don't have a machine and have selected a program, start a new one
+                #focus on the table in order to better highlight the current action
+                self.program_table.SetFocus()
+
+
+        #if we don't have a machine, and have selected a program, start a new simulation
         elif self.program_chooser.GetSelection() != wx.NOT_FOUND:
                 self.program_chooser.Enable(False)
                 self.speed_input.Enable(False)
-                self.run_pause_button.SetLabel("Pause")
                 self.reset_button.Enable(True)
                 self.tapes_panel.Enable(False)
+                self.run_pause_button.SetLabel("Pause")
+                self.program_table.SetFocus()
 
                 #load the current UI values into the program's tapes
                 for tape_nr, tape in enumerate(self.program.tapes):
@@ -222,9 +227,9 @@ class MainWindow(wx.Frame):
 
         self.program_chooser.Enable(True)
         self.speed_input.Enable(True)
-        self.run_pause_button.SetLabel("Run")
         self.reset_button.Enable(False)
         self.tapes_panel.Enable(True)
+        self.run_pause_button.SetLabel("Run")
         self.select_action(-1)
         
         for tape_nr, tape in enumerate(self.tm.program.tapes):
