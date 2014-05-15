@@ -192,16 +192,18 @@ class TuringMachine(threading.Thread):
         while self.running:
             self.should_continue.wait()  #if the machine is paused (by should_continue.clear()),
                                          #this will block until it resumes (should_continue.set())
-            
             self.read_step()
             self.post_step(STEP_READ)
-            
+
+            self.should_continue.wait()
             self.write_step()
             self.post_step(STEP_WRITE)
-            
+
+            self.should_continue.wait()
             self.move_step()
             self.post_step(STEP_MOVE)
-            
+
+            self.should_continue.wait()
             self.state_change_step()
             self.post_step(STEP_STATE)
 
