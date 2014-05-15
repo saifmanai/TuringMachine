@@ -1,6 +1,6 @@
 TuringMachine
 =============
 
-Turing machine with support for multiple tapes
+Universal turing machine with support for multiple tapes
 
-![UI Screenshot](http://i.imgur.com/VOHF7d6.png "UI Screenshot")
+![UI Screenshot](http://i.imgur.com/qlxqCyD.jpg "UI Screenshot")
