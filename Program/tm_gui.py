@@ -63,7 +63,7 @@ class MainWindow(wx.Frame):
         controls_panel.Sizer.Add(program_chooser, 0, wx.EXPAND|wx.ALL, BORDER)
         
         
-        speed_label = wx.StaticText(controls_panel, label="Simulation speed (OPs/sec): ") 
+        speed_label = wx.StaticText(controls_panel, label="Simulation speed (steps/sec): ") 
         controls_panel.Sizer.Add(speed_label, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, BORDER)
         
         speed_input = wx.SpinCtrl(controls_panel, min=1, initial=8, value='8', size=(60,-1))
@@ -71,6 +71,7 @@ class MainWindow(wx.Frame):
 
 
         run_pause_button = wx.Button(controls_panel, label="Run")
+        run_pause_button.Enable(False)
         controls_panel.Sizer.Add(run_pause_button, 0, wx.EXPAND|wx.ALL, BORDER)
         
         reset_button = wx.Button(controls_panel, label="Reset")
@@ -179,10 +180,12 @@ class MainWindow(wx.Frame):
         self.program_table.DeleteAllItems()
         for action in self.program.actions:
             self.add_action(action)
+            
+        self.run_pause_button.Enable(True)
     
     
     def run_pause(self, event):
-        #if we already have a machine, just pause or resume it
+        #if we already have a machine running, just pause or resume it
         if hasattr(self, 'tm') and self.tm.running:
             if self.tm.should_continue.is_set():  #if the TuringMachine isn't paused
                 self.tm.should_continue.clear()  #pause its thread
@@ -199,22 +202,21 @@ class MainWindow(wx.Frame):
                 #focus on the table in order to better highlight the current action
                 self.program_table.SetFocus()
 
+        #otherwise start a new simulation
+        else:
+            self.program_chooser.Enable(False)
+            self.speed_input.Enable(False)
+            self.reset_button.Enable(True)
+            self.tapes_panel.Enable(False)
+            self.run_pause_button.SetLabel("Pause")
+            self.program_table.SetFocus()
 
-        #if we don't have a machine, and have selected a program, start a new simulation
-        elif self.program_chooser.GetSelection() != wx.NOT_FOUND:
-                self.program_chooser.Enable(False)
-                self.speed_input.Enable(False)
-                self.reset_button.Enable(True)
-                self.tapes_panel.Enable(False)
-                self.run_pause_button.SetLabel("Pause")
-                self.program_table.SetFocus()
-
-                #load the current UI values into the program's tapes
-                for tape_nr, tape in enumerate(self.program.tapes):
-                    self.program.tapes[tape_nr] = list(self.tape_panels[tape_nr].GetValue())
+            #load the current UI values into the program's tapes
+            for tape_nr, tape in enumerate(self.program.tapes):
+                self.program.tapes[tape_nr] = list(self.tape_panels[tape_nr].GetValue())
                 
-                self.tm = tm.TuringMachine(self.program, self.speed_input.GetValue(), self.tm_listener)
-                self.tm.start()
+            self.tm = tm.TuringMachine(self.program, self.speed_input.GetValue(), self.tm_listener)
+            self.tm.start()
 
 
     """
