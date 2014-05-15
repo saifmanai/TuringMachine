@@ -160,7 +160,6 @@ class MainWindow(wx.Frame):
             self.program_table.Select(id, False)
 
         if action_id != -1:  #-1 is used when no program is running
-            self.program_table.SetFocus()  #acquire focus to make the selection more visible
             self.program_table.Select(action_id, True)
             self.program_table.EnsureVisible(action_id)
 
