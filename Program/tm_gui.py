@@ -141,12 +141,17 @@ class MainWindow(wx.Frame):
         
 
     def update_tape(self, tape_nr, value, current_pos):
+        #ad brackets around current value
+        tape_value = value
+        if current_pos != -1:
+            tape_value = value[:current_pos] + "[" + value[current_pos] + "]" + value[current_pos+1:]
+        
         tape_entry = self.tape_panels[tape_nr]
         tape_entry.SetValue("")
-        tape_entry.SetValue(value)
+        tape_entry.SetValue(tape_value)
         
         if current_pos != -1:
-            tape_entry.SetStyle(current_pos, current_pos+1, CURRENT_POS_STYLE)
+            tape_entry.SetStyle(current_pos+1, current_pos+2, CURRENT_POS_STYLE)
 
 
     def add_action(self, action):
