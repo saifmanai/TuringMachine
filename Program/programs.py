@@ -95,3 +95,84 @@ carry  _,0,_  _,0,1  -,<,< add
 carry  _,1,_  _,1,0  -,<,< carry
 carry  _,_,_  _,_,1  -,-,- halt""")
 plist.append(program)
+
+
+
+program = TuringProgram("Multiplication")
+program.set_tapes(list("1011"), list("1110"), [])
+program.state_initial = 'move'
+program.set_actions("""\
+move         0,0,_  0,0,_  >,>,> move
+move         0,1,_  0,1,_  >,>,> move
+move         0,_,_  0,_,_  >,-,> move
+move         1,0,_  1,0,_  >,>,> move
+move         1,1,_  1,1,_  >,>,> move
+move         1,_,_  1,_,_  >,-,> move
+move         _,0,_  _,0,_  -,>,> move
+move         _,1,_  _,1,_  -,>,> move
+move         _,_,_  _,_,_  <,<,< multi
+multi        0,0,_  0,0,0  <,-,< multi
+multi        0,0,0  0,0,0  <,-,< multi
+multi        0,0,1  0,0,0  <,-,< multi
+multi        0,1,_  0,1,0  <,-,< multi
+multi        0,1,0  0,1,0  <,-,< multi
+multi        0,1,1  0,1,0  <,-,< multi
+multi        1,0,_  1,0,0  <,-,< multi
+multi        1,0,0  1,0,0  <,-,< multi
+multi        1,0,1  1,0,0  <,-,< multi
+multi        1,1,_  1,1,1  <,-,< multi
+multi        1,1,0  1,1,1  <,-,< multi
+multi        1,1,1  1,1,0  <,-,< multi-carry
+multi        _,0,_  _,0,_  >,<,- multi-shift
+multi        _,0,0  _,0,0  >,<,- multi-shift
+multi        _,0,1  _,0,1  >,<,- multi-shift
+multi        _,1,_  _,1,_  >,<,- multi-shift
+multi        _,1,0  _,1,0  >,<,- multi-shift
+multi        _,1,1  _,1,1  >,<,- multi-shift
+multi        _,_,_  _,_,_  -,-,- halt
+multi        _,_,0  _,_,0  -,-,- halt
+multi        _,_,1  _,_,1  -,-,- halt
+multi-carry  0,0,_  0,0,1  <,-,< multi
+multi-carry  0,0,0  0,0,1  <,-,< multi
+multi-carry  0,0,1  0,0,0  <,-,< multi-carry
+multi-carry  0,1,_  0,1,1  <,-,< multi
+multi-carry  0,1,0  0,1,1  <,-,< multi
+multi-carry  0,1,1  0,1,0  <,-,< multi-carry
+multi-carry  1,0,_  1,0,1  <,-,< multi
+multi-carry  1,0,0  1,0,1  <,-,< multi
+multi-carry  1,0,1  1,0,0  <,-,< multi-carry
+multi-carry  1,1,_  1,1,0  <,-,< multi-carry
+multi-carry  1,1,0  1,1,0  <,-,< multi-carry
+multi-carry  1,1,1  1,1,1  <,-,< multi-carry
+multi-carry  _,0,_  _,0,1  >,<,- multi-shift
+multi-carry  _,0,0  _,0,1  >,<,- multi-shift
+multi-carry  _,0,1  _,0,0  -,-,< multi-carry
+multi-carry  _,1,_  _,1,1  >,<,- multi-shift
+multi-carry  _,1,0  _,1,1  >,<,- multi-shift
+multi-carry  _,1,1  _,1,0  -,-,< multi-carry
+multi-carry  _,_,_  _,_,1  -,-,- halt
+multi-carry  _,_,0  _,_,1  -,-,- halt
+multi-carry  _,_,1  _,_,0  -,-,< multi-carry
+multi-shift  0,0,0  0,0,0  >,-,> multi-shift
+multi-shift  0,0,1  0,0,1  >,-,> multi-shift
+multi-shift  0,0,_  0,0,_  >,-,> multi-shift
+multi-shift  0,1,0  0,1,0  >,-,> multi-shift
+multi-shift  0,1,1  0,1,1  >,-,> multi-shift
+multi-shift  0,1,_  0,1,_  >,-,> multi-shift
+multi-shift  1,0,0  1,0,0  >,-,> multi-shift
+multi-shift  1,0,1  1,0,1  >,-,> multi-shift
+multi-shift  1,0,_  1,0,_  >,-,> multi-shift
+multi-shift  1,1,0  1,1,0  >,-,> multi-shift
+multi-shift  1,1,1  1,1,1  >,-,> multi-shift
+multi-shift  1,1,_  1,1,_  >,-,> multi-shift
+multi-shift  _,0,0  _,0,0  <,-,< multi
+multi-shift  _,0,1  _,0,1  <,-,< multi
+multi-shift  _,0,_  _,0,_  <,-,< multi
+multi-shift  _,1,0  _,1,0  <,-,< multi
+multi-shift  _,1,1  _,1,1  <,-,< multi
+multi-shift  _,1,_  _,1,_  <,-,< multi
+multi-shift  0,_,0  0,_,0  -,-,- halt
+multi-shift  0,_,1  0,_,1  -,-,- halt
+multi-shift  1,_,0  1,_,0  -,-,- halt
+multi-shift  1,_,1  1,_,1  -,-,- halt""")
+plist.append(program)
